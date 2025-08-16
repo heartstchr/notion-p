@@ -1,299 +1,167 @@
-# Notion Proxy Service with Direct File Upload
+# Service Request Manager
 
-A comprehensive Netlify-based service that acts as a proxy to the Notion API, with automatic database ID injection for creating pages, **direct image uploads to Notion**, and automated status change notifications.
+A simple web application that helps businesses manage customer service requests using Notion as a database. Think of it as a digital form that automatically saves customer requests to your Notion workspace and sends email notifications when things get updated.
 
-## 🚀 Features
+## 🎯 What This Does
 
-- **Notion API Proxy**: Secure proxy service for Notion API calls with automatic database ID injection
-- **Direct File Upload**: Upload images directly to Notion using their Direct Upload API
-- **Automated Notifications**: Scheduled function that sends email notifications when project status changes
-- **Service Request Form**: Complete web form for collecting service requests with file attachments
-- **Netlify Blobs Integration**: Temporary file storage with automatic cleanup
-- **CORS Support**: Full CORS support for both local development and production
-- **Optimized Configuration**: Shared database ID configuration for consistent behavior across functions
+**For Your Customers:**
 
-## 🏗️ Project Structure
+- Fill out a simple web form with their service request details
+- Upload photos of their broken items or issues
+- Get automatic email updates when their request status changes
 
-```
-notion-p/
-├── netlify/
-│   ├── functions/
-│   │   ├── config.js                # Shared configuration constants
-│   │   ├── submit-to-notion.js      # Notion API proxy with database injection
-│   │   ├── upload-image.js          # Direct image upload to Notion
-│   │   ├── serve-blob.js            # Serve temporary files from Netlify Blobs
-│   │   └── check-status-changes.js  # Automated status change notifications
-│   └── netlify.toml                 # Netlify configuration
-├── public/
-│   ├── index.html                   # Service request form
-│   └── stackseekers.jpeg            # Branding image
-├── package.json                     # Dependencies and scripts
-└── README.md                        # This file
-```
+**For Your Business:**
 
-## 🛠️ Installation & Setup
+- All customer requests automatically appear in your Notion database
+- No more manual data entry or lost paperwork
+- Automatic email notifications keep customers informed
+- Everything is organized and searchable in Notion
 
-### Prerequisites
+## 🚀 Quick Start (5 minutes)
 
-- Node.js (v16 or higher)
-- Netlify account
-- Notion integration token
-- SMTP email service (for notifications)
+### Step 1: Get Your Notion Setup Ready
 
-### 1. Clone and Install
+1. **Create a Notion Integration**: Go to [notion.so/my-integrations](https://notion.so/my-integrations) and create a new integration
+2. **Copy your API key** (looks like: `secret_abc123...`)
+3. **Create a database** in Notion with these columns:
+   - `Product` (Text)
+   - `Serial Number` (Text)
+   - `Purchase Date` (Date)
+   - `Issue Type` (Select)
+   - `Description` (Text)
+   - `Status` (Select: "Pending", "In Progress", "Completed", "Rejected")
+   - `Email Sent` (Checkbox)
+   - `Client Email` (Email)
+   - `Client Name` (Text)
+   - `Phone` (Phone Number)
+4. **Copy your database ID** from the URL (the part after the last slash)
 
-```bash
-git clone <your-repo-url>
-cd notion-p
-npm install
-```
+### Step 2: Deploy to Netlify
 
-### 2. Install Netlify CLI
+1. **Fork this repository** to your GitHub account
+2. **Sign up for Netlify** at [netlify.com](https://netlify.com)
+3. **Connect your GitHub repository** to Netlify
+4. **Set these environment variables** in Netlify:
+   - `NOTION_API_KEY` = your Notion API key
+   - `NOTION_DATABASE_ID` = your Notion database ID
+   - `SMTP_USER` = your Gmail address
+   - `SMTP_PASS` = your Gmail app password
+5. **Deploy!** Netlify will automatically build and launch your site
 
-```bash
-npm install -g netlify-cli
-```
+### Step 3: Test It Out
 
-### 3. Environment Variables
+1. Visit your new website (Netlify will give you a URL)
+2. Fill out the service request form
+3. Check your Notion database - the request should appear automatically!
 
-Create a `.env` file in the project root:
+## 🔧 How It Works (Simple Version)
 
-```bash
-# Notion Configuration
-NOTION_API_KEY=your_notion_integration_token
-NOTION_DATABASE_ID=your_notion_database_id
+1. **Customer fills out form** → Data goes to your Notion database
+2. **Photos get uploaded** → Stored temporarily, then added to Notion
+3. **Status changes** → Automatic emails sent to customers
+4. **Everything syncs** → Your Notion database stays up-to-date
 
-# Email Configuration (for status notifications)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-password
-GMAIL_APP_PASSWORD=your-gmail-app-password
-FROM_EMAIL=noreply@yourdomain.com
-```
+## 📱 What Your Customers See
 
-### 4. Configure Database ID
+A clean, professional form where they can:
 
-Set the database ID in your environment variables:
+- Enter product details (name, serial number, purchase date)
+- Select the type of issue they're having
+- Describe the problem in detail
+- Upload photos (up to 5MB each)
+- Provide contact information
 
-```bash
-# In your .env file or Netlify dashboard
-NOTION_DATABASE_ID=your-actual-database-id-here
-```
+## 📊 What You See in Notion
 
-Replace `your-actual-database-id-here` with your actual Notion database ID. This ID is used by both the API proxy function and the status change notification function.
+A organized database with:
 
-### 5. Start Development Server
+- All customer requests in one place
+- Status tracking for each request
+- Customer contact information
+- Attached photos and documents
+- Easy filtering and searching
 
-```bash
-npm run dev
-```
+## 🎨 Customization
 
-This will start the Netlify dev server on `http://localhost:8888` and automatically configure all required environment variables.
+### Change the Look
 
-## 🔧 API Endpoints
+- Edit `public/index.html` to modify the form design
+- Update the logo by replacing `public/stackseekers.jpg`
+- Modify colors and styling in the HTML file
 
-### 1. Notion API Proxy
+### Modify the Form Fields
 
-```
-POST /.netlify/functions/submit-to-notion?path=/v1/pages
-```
+- Add or remove fields in the HTML form
+- Update the Notion database structure to match
+- Modify the JavaScript code that processes the form
 
-- Proxies requests to Notion API
-- Automatically injects database ID from environment variables
-- Supports all Notion API endpoints under `/v1/`
-- Handles CORS and authentication
+### Change Email Templates
 
-### 2. Image Upload
+- Edit `netlify/functions/email-templates.js` to customize email messages
+- Modify `netlify/functions/email-utils.js` to change email behavior
 
-```
-POST /.netlify/functions/upload-image
-```
+## 🚨 Troubleshooting
 
-- Uploads images directly to Notion using Direct Upload API
-- Supports JPEG, PNG, GIF, WebP, SVG formats
-- File size limit: 5MB per file
-- Automatic file validation and error handling
+### "Notion API key missing" Error
 
-### 3. File Serving
+- Make sure you've set `NOTION_API_KEY` in your Netlify environment variables
+- Double-check that your Notion integration is active
 
-```
-GET /.netlify/functions/serve-blob/{filename}
-```
+### "Database ID missing" Error
 
-- Serves temporary files from Netlify Blobs
-- Used for previewing uploaded images
-- Automatic content-type detection
+- Verify `NOTION_DATABASE_ID` is set correctly in Netlify
+- Make sure your Notion integration has access to the database
 
-### 4. Status Change Notifications
+### Photos not uploading
 
-```
-GET /.netlify/functions/check-status-changes
-```
+- Check that your Netlify site has Blobs enabled (should happen automatically)
+- Verify file sizes are under 5MB
 
-- Automated function that runs every 2 minutes
-- Checks for pages with "Completed" or "Rejected" status
-- Sends email notifications to clients
-- Can be triggered manually for testing
+### Emails not sending
 
-## 📁 File Upload Workflow
+- Ensure your Gmail app password is correct
+- Check that `SMTP_USER` and `SMTP_PASS` are set properly
 
-1. **Client Upload**: Images are converted to base64 and sent to the upload function
-2. **Temporary Storage**: Files are stored in Netlify Blobs for public access
-3. **Notion Integration**: Files are uploaded to Notion using Direct Upload API
-4. **Database Linking**: Uploaded files are automatically linked to database entries
-5. **Cleanup**: Temporary files are automatically removed after 24 hours
+## 💡 Pro Tips
 
-### Supported File Types
+1. **Test locally first**: Run `npm run dev` to test on your computer before deploying
+2. **Use Gmail app passwords**: Don't use your regular Gmail password - create an app password instead
+3. **Backup your database**: Export your Notion database regularly
+4. **Monitor your Netlify logs**: Check the function logs if something isn't working
 
-- **Images**: JPEG, PNG, GIF, WebP, SVG
-- **Size Limit**: 5MB per file (Notion free workspace limit)
-- **Batch Upload**: Up to 10 files per submission
+## 🤝 Need Help?
 
-## 📧 Email Notifications
+1. **Check the logs**: Look at your Netlify function logs for error messages
+2. **Verify setup**: Make sure all environment variables are set correctly
+3. **Test step by step**: Try each part individually to isolate issues
 
-The service includes an automated notification system that:
+## 📚 What's in the Box
 
-- **Runs every 2 minutes** via Netlify's built-in scheduling
-- Monitors database for status changes (Completed/Rejected)
-- Sends beautifully formatted HTML emails to clients
-- Includes project details and status-specific messaging
+- **`public/index.html`** - The customer-facing form
+- **`netlify/functions/`** - Backend functions that handle everything
+- **`netlify.toml`** - Configuration for Netlify
+- **`package.json`** - List of required software packages
 
-### Email Configuration Examples
+## 🔒 Security & Privacy
 
-#### Gmail Setup
+- All data is stored securely in Notion
+- No customer data is stored on Netlify servers
+- Photos are automatically cleaned up after 24 hours
+- CORS is enabled for cross-origin requests
 
-```bash
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-16-character-app-password
-FROM_EMAIL=your-email@gmail.com
-```
+## 💰 Cost
 
-#### Custom SMTP Server
+- **Netlify**: Free tier includes 100GB bandwidth and 125K function calls per month
+- **Notion**: Free tier includes unlimited databases and 5GB file storage
+- **Gmail**: Free for sending emails (up to 500 per day)
 
-```bash
-SMTP_HOST=your-smtp-server.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-username
-SMTP_PASS=your-password
-FROM_EMAIL=noreply@yourdomain.com
-```
+## 🎉 You're All Set!
 
-## 🚀 Deployment
+Once deployed, you'll have a professional service request system that:
 
-### Netlify (Recommended)
+- Saves you time on data entry
+- Keeps customers informed automatically
+- Organizes everything in Notion
+- Looks professional and trustworthy
 
-1. **Connect Repository**: Link your GitHub/GitLab repository to Netlify
-2. **Build Settings**:
-   - Build command: `npm run build` (or leave empty if no build step)
-   - Publish directory: `public`
-   - Functions directory: `netlify/functions`
-3. **Environment Variables**: Add all required environment variables in Netlify dashboard
-4. **Deploy**: Netlify will automatically deploy on every push
-
-### Manual Deployment
-
-```bash
-# Build and deploy
-npm run build
-netlify deploy --prod
-```
-
-## 🔍 Testing
-
-### Local Testing
-
-```bash
-npm run dev
-# Visit http://localhost:8888
-```
-
-### Manual Function Testing
-
-```bash
-# Test status notifications
-curl "http://localhost:8888/.netlify/functions/check-status-changes?cron=true"
-
-# Test image upload
-curl -X POST "http://localhost:8888/.netlify/functions/upload-image" \
-  -H "Content-Type: application/json" \
-  -d '{"files":[{"name":"test.jpg","type":"image/jpeg","data":"base64data","size":1024}]}'
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **"MissingBlobsEnvironmentError"**
-
-   - Run `npx netlify login` to authenticate
-   - Use `npx netlify dev` to start development server
-   - Netlify automatically handles blobs context in production
-
-2. **CORS Errors**
-
-   - Make sure you're running the Netlify dev server (`npm run dev`)
-   - Access through `http://localhost:8888` (not `file://` protocol)
-   - Check that CORS headers are properly set
-
-3. **Email Notifications Not Working**
-   - Verify SMTP credentials in environment variables
-   - Check Netlify function logs for errors
-   - Ensure the function is scheduled correctly in `netlify.toml`
-
-### Environment Variables Checklist
-
-- [ ] `NOTION_API_KEY` - Your Notion integration token
-- [ ] `NOTION_DATABASE_ID` - Your Notion database ID
-- [ ] `SMTP_HOST` - SMTP server hostname
-- [ ] `SMTP_USER` - SMTP username/email
-- [ ] `SMTP_PASS` or `GMAIL_APP_PASSWORD` - SMTP password
-- [ ] `FROM_EMAIL` - Sender email address
-
-### 🎯 Automatic Blobs Handling
-
-**No manual `NETLIFY_BLOBS_CONTEXT` configuration needed!**
-
-- **Development**: `netlify dev` automatically generates blobs context
-- **Production**: Netlify automatically provides blobs authentication
-- **Functions**: Use `getStore("temp-uploads")` directly without parameters
-- **Cleanup**: Files automatically expire after 24 hours
-
-## 📚 Dependencies
-
-### Production Dependencies
-
-- `@netlify/blobs` - File storage and management
-- `busboy` - File upload parsing
-- `dotenv` - Environment variable management
-- `nodemailer` - Email sending
-
-### Development Dependencies
-
-- `netlify-cli` - Local development and deployment
-
-## 📄 License
-
-ISC License
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📞 Support
-
-For issues and questions:
-
-1. Check the troubleshooting section above
-2. Review Netlify function logs
-3. Verify environment variable configuration
-4. Test functions manually using the provided endpoints
+Your customers will love the easy-to-use form, and you'll love having everything organized in one place!

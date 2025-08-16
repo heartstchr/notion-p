@@ -88,7 +88,6 @@ const getDatabasePages = async (databaseId, notionApiKey) => {
     }
 
     const data = await response.json();
-    console.log(data.results);
     return data.results || [];
   } catch (error) {
     console.error("Failed to fetch database pages:", error.message);
@@ -98,11 +97,6 @@ const getDatabasePages = async (databaseId, notionApiKey) => {
 
 export default async function handler(request, context) {
   console.log("=== CHECK STATUS FUNCTION TRIGGERED ===");
-  console.log("Request method:", request.method);
-  console.log("Request URL:", request.url);
-  console.log("Context keys:", Object.keys(context || {}));
-  console.log("Headers:", Object.fromEntries(request.headers.entries()));
-
   // Check if this is a scheduled function trigger or manual trigger
   const url = new URL(request.url);
   const isScheduled =
@@ -111,12 +105,6 @@ export default async function handler(request, context) {
     request.headers.get("x-cron-trigger") ||
     url.searchParams.get("cron") === "true" ||
     context.isScheduled; // Functions API v2 scheduled context
-
-  console.log("Scheduled trigger detected:", isScheduled);
-  console.log(
-    "x-netlify-event header:",
-    request.headers.get("x-netlify-event")
-  );
 
   if (!isScheduled) {
     return new Response(
@@ -134,7 +122,6 @@ export default async function handler(request, context) {
 
   const notionApiKey = process.env.NOTION_API_KEY;
   const databaseId = process.env.NOTION_DATABASE_ID;
-  console.log("Database ID:", databaseId);
   if (!notionApiKey || !databaseId) {
     return new Response(
       JSON.stringify({
@@ -148,8 +135,6 @@ export default async function handler(request, context) {
   }
 
   try {
-    console.log("Starting status check scheduled job...");
-
     // Get total count and filtered pages from the database
     const totalPages = await getDatabaseTotalCount(databaseId, notionApiKey);
     const pages = await getDatabasePages(databaseId, notionApiKey);
